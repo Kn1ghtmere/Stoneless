@@ -6,6 +6,8 @@ import config
 
 import autostart
 
+import info
+
 from reminder import Reminder
 
 from datetime import date
@@ -89,7 +91,25 @@ class Popup(tk.Toplevel):
 
 
 
+class InfoWindow(tk.Toplevel):
 
+     def __init__(self, parent):
+          super().__init__(parent)
+          self.title("important info")
+          self.configure(bg=config.BG)
+          self.geometry("420x560")
+
+
+          tk.Label(self, text=info.TITLE, font=(FONT, 18, "bold"),
+                   bg=config.BG, fg=config.TEXT).pack(pady=(20,10))
+
+          for heading, body in info.SECTIONS:
+               tk.Label(self, text=heading, font=(FONT, 18, "bold"),
+                        bg=config.BG, fg=config.WATER, anchor="w"
+                        ).pack(fill="x", padx=24, pady=(12,2))
+               tk.Label(self, text=body, font=(FONT,10), bg=config.BG,
+                        fg=config.DIM, justify="left", wraplength=370, anchor="w"
+                        ).pack(fill="x", padx=24)
 
 class App:
      def __init__(self, minimized=False):
@@ -98,12 +118,13 @@ class App:
                                    config.SNOOZE_MINUTES * 60)
 
           self.popup = None
+          self.info = None
           self.day = date.today()
 
           self.root = tk.Tk()
           self.root.title("Stoneless")
           self.root.configure(bg=config.BG)
-          self.root.geometry("340x520")
+          self.root.geometry("340x580")
           self.root.resizable(False, False)
 
 
@@ -122,6 +143,8 @@ class App:
                    bg=config.BG, fg=config.DIM).pack()
 
           make_buttons(self.root, "I Drank", self.record_drink).pack(pady=(24, 0))
+
+          make_buttons(self.root, "info", self.show_info, primary=False).pack(pady=(8, 0))
 
           if autostart.is_supported():
                self.startup = tk.BooleanVar(value=autostart.is_enabled())
@@ -164,6 +187,13 @@ class App:
                autostart.enable()
           else:
                autostart.disable()
+
+
+     def show_info(self):
+          if self.info is None or not self.info.winfo_exists():
+               self.info = InfoWindow(self.root)
+          else:
+               self.info.lift()
 
 
      def refresh(self):
