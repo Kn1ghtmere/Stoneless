@@ -25,6 +25,11 @@ def center(win, w, h):
      y = (win.winfo_screenheight() - h) // 2
      win.geometry(f"{w}x{h}+{x}+{y}")
 
+def center_on(win, parent, w, h):
+     parent.update_idletasks()
+     x = parent.winfo_x() + (parent.winfo_width() - w) // 2
+     y = parent.winfo_y() + (parent.winfo_height() - h) // 2
+     win.geometry(f"{w}x{h}+{max(x, 0)}+{max(y, 0)}")
 
 
 def fmt(seconds):
@@ -160,7 +165,8 @@ class InfoWindow(tk.Toplevel):
           super().__init__(parent)
           self.title("important info")
           self.configure(bg=config.BG)
-          self.geometry("420x560")
+          center_on(self, parent, 420, 560)
+          self.bind("<Escape>", lambda e: self.destroy())
           self.minsize(360, 300)
 
           tk.Label(self, text=info.TITLE, font=(FONT, 18, "bold"),
@@ -235,7 +241,8 @@ class HistoryWindow(tk.Toplevel):
           super().__init__(parent)
           self.title("History")
           self.configure(bg=config.BG)
-          self.geometry("400x540")
+          center_on(self, parent, 400, 540)
+          self.bind("<Escape>", lambda e: self.destroy())
           self.minsize(340,240)
 
           tk.Label(self, text="History", font=(FONT, 18, "bold"),
@@ -272,7 +279,7 @@ class HistoryWindow(tk.Toplevel):
 
 class SettingsWindow(tk.Toplevel):
 
-     FEILDS = (
+     FIELDS = (
           ("Daily goal (drinks)", "GOAL", 1, 30),
           ("Remind every (minutes)", "DEFAULT_MINUTES", 1, 240),
           ("Snooze for (minutes)", "SNOOZE_MINUTES", 1, 60),
@@ -284,16 +291,18 @@ class SettingsWindow(tk.Toplevel):
           self.app = app
           self.title("Settings")
           self.configure(bg=config.BG)
-          self.geometry("360x300")
+          center_on(self, app.root, 360, 330)
+          self.bind("<Escape>", lambda e: self.destroy())
+          self.bind("<Return>",lambda e: self.save())
           self.resizable(False, False)
 
 
-          tk.Label(self, text ="settings" , font=(FONT, 18, "bold"),
+          tk.Label(self, text ="Settings" , font=(FONT, 18, "bold"),
                    bg=config.BG, fg=config.TEXT
                    ).pack(anchor="w", padx=24, pady=(20, 10))
 
           self.spins = {}
-          for label, key, low, high in self.FEILDS:
+          for label, key, low, high in self.FIELDS:
                row = tk.Frame(self, bg=config.BG)
                row.pack(fill="x", padx=24, pady=6)
                tk.Label(row, text=label, font=(FONT, 11),
@@ -308,7 +317,9 @@ class SettingsWindow(tk.Toplevel):
                spin.pack(side="right")
                self.spins[key] = (label, spin, low, high)
 
-
+          tk.Label(self, text="Saving restarts the reminder timer.",
+                   font=(FONT, 9), bg=config.BG, fg=config.DIM
+                   ).pack(anchor="w", padx=24, pady=(10, 0))
           self.note = tk.Label(self, font=(FONT, 10), bg=config.BG, fg=config.TEXT)
           self.note.pack(pady=(10, 0))
 
@@ -357,7 +368,7 @@ class App:
           self.root = tk.Tk()
           self.root.title("Stoneless")
           self.root.configure(bg=config.BG)
-          self.root.geometry("340x660")
+          center(self.root, 340, 560)
           self.root.resizable(False, False)
           self.root.protocol("WM_DELETE_WINDOW", self.hide)
           self.tray = Tray(lambda: self.pending.put("open"),
