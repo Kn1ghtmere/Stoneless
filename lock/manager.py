@@ -36,6 +36,59 @@ class LockManager:
         for index, monitor in enumerate(monitors):
             self.windows.append(
                 LockWindow(self.root, monitor, index == 0, glasses, self.drank, self.emergency_exit)
+            )import atexit
+import time
+import traceback
+
+from config import MAX_LOCK_SECONDS,WATCHDOG_STALE_SECONDS
+from lock.failsafe import FailSafe
+from lock.monitors import get_monitors
+
+class LockManager:
+    def __init__(self,root,get_glasses,on_drink,on_skip):
+        self.root=root
+        self.get_glasses=get_glasses
+        self.on_drink=on_drink
+        self.on_skip=on_skip
+        self.windows=[]
+        self.jobs={}
+        self.locked_at=0.0
+        self.failsafe=FailSafe(WATCHDOG_STALE_SECONDS)      
+        
+        root.report_callback_exception=self.handle_error
+        atexit.register(self.failsafe.stop)
+
+
+    @property
+    def is_locked(self):
+        return bool(self.windows)
+
+    def lock(self):
+        if self.windows:
+            return False
+
+        monitors=get_monitors(self.root)
+        glasses=self.get_glasses()
+
+        for index,monitor in enumerate(monitors):
+            self.windows.append(
+                LockWindows.append(
+                    LockWindow(self.root,monitor,index==0,glasses,self.drank,self.emergency_exit)
+
+
+
+                )
+
+                self.locked_at=time.time()
+                self.failsafe.start()
+
+                self.keep_on_top()
+                self.heartbeat()
+                self.jobs["timeout"]=self.root.after(int(MAX_LOCK_SECONDS*1000),self.timed_out)
+                return True
+
+
+                def un
             )
 
         self.locked_at = time.time()
