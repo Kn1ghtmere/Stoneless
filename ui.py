@@ -4,6 +4,8 @@ from stats import Stats
 
 import config
 
+import autostart
+
 from reminder import Reminder
 
 from datetime import date
@@ -90,7 +92,7 @@ class Popup(tk.Toplevel):
 
 
 class App:
-     def __init__(self):
+     def __init__(self, minimized=False):
           self.stats = Stats()
           self.reminder = Reminder(config.DEFAULT_MINUTES * 60,
                                    config.SNOOZE_MINUTES * 60)
@@ -121,6 +123,18 @@ class App:
 
           make_buttons(self.root, "I Drank", self.record_drink).pack(pady=(24, 0))
 
+          if autostart.is_supported():
+               self.startup = tk.BooleanVar(value=autostart.is_enabled())
+               tk.Checkbutton(
+                    self.root, text="Launch on Startup", variable=self.startup,
+                    command=self.toggle_startup, font=(FONT, 10),
+                    bg=config.BG, fg=config.DIM , selectcolor=config.BG,
+                    activebackground=config.BG, activeforeground=config.DIM,
+               ).pack(pady=(18,0))
+
+          if minimized:
+               self.root.iconify()
+
           self.refresh()
 
 
@@ -144,7 +158,14 @@ class App:
                self.popup.destroy()
                self.popup = None
 
-    
+
+     def toggle_startup(self):
+          if self.startup.get():
+               autostart.enable()
+          else:
+               autostart.disable()
+
+
      def refresh(self):
           n = self.stats.count()
           self.count.config(text=f"{n} / {config.GOAL}")

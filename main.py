@@ -1,3 +1,5 @@
+import sys
+
 from lock.platform_tools import compositor_warning,describe,enable_dpi_awareness
 
 
@@ -10,7 +12,7 @@ def main():
     if warning:
         print(warning)
 
-    App().run()
+    App(minimized="--minimized" in sys.argv).run()
 
 
 if __name__=="__main__":
