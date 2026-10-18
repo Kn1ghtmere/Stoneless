@@ -116,23 +116,41 @@ class Glass(tk.Canvas):
 class Popup(tk.Toplevel):
      def __init__(self, app):
           super().__init__(app.root)
+          self.job = None
           self.overrideredirect(True)
           self.attributes("-topmost", True)
+          self.attributes("-alpha", 0.0)
           self.configure(bg=config.BG, highlightthickness=2,
                          highlightbackground=config.BUTTON)
-          center(self, 340, 190)
+          center(self, 340, 200)
 
-          tk.Label(self, text="Time for WATAAAHHH", font=(FONT, 18, "bold"),
-                   bg=config.BG, fg=config.DIM).pack()
+          tk.Label(self, text="Time for WATAAHHH", font=(FONT, 18, "bold"),
+                   bg=config.BG, fg=config.TEXT).pack(pady=(30,4))
+          tk.Label(self, text=f"{app.stats.count()} of {config.GOAL} so far today",
+                   font=(FONT, 11), bg=config.BG, fg=config.DIM).pack()
 
           row = tk.Frame(self, bg=config.BG)
           row.pack(pady=26)
-          make_buttons(row, "Yeah did bro", app.record_drink).pack(side="left", padx=6)
-          make_buttons(row, "Not yet", app.snooze, primary=False).pack(side="left", padx=6)
+          make_buttons(row, "yeah did bro", app.record_drink).pack(side="left", padx=6)
+          make_buttons(row, f"Not yet ({config.SNOOZE_MINUTES} min)", app.snooze,
+                       primary=False).pack(side="left", padx=6)
 
-
+          self.bind("<Escape>", lambda e: app.snooze())
           self.lift()
           self.focus_force()
+          self.fade(0.0)
+
+
+     def fade(self, alpha):
+          alpha = min(1.0, alpha + 0.12)
+          self.attributes("-alpha", alpha)
+          if alpha < 1.0:
+               self.job = self.after(16, self.fade, alpha)
+
+     def destroy(self):
+          if self.job is not None:
+               self.after_cancel(self.job)
+          super().destroy()
 
 
 
