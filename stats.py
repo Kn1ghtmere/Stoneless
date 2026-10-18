@@ -51,5 +51,16 @@ class Stats:
         self._save()
         return self.count(now)
 
+    def undo_drink(self, now=None):
+        key = _key(now)
+        times = self.days.get(key)
+        if not times:
+            return 0
+        times.pop()
+        if not times:
+            del self.days[key]
+        self._save()
+        return self.count(now)
+
     def history(self):
         return {day: len(times) for day, times in sorted(self.days.items())}

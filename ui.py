@@ -258,7 +258,7 @@ class App:
           self.root = tk.Tk()
           self.root.title("Stoneless")
           self.root.configure(bg=config.BG)
-          self.root.geometry("340x620")
+          self.root.geometry("340x660")
           self.root.resizable(False, False)
 
 
@@ -281,6 +281,7 @@ class App:
           self.next.pack(pady=(14, 0))
 
           make_buttons(self.root, "I Drank", self.record_drink).pack(pady=(24, 0))
+          make_buttons(self.root, "Undo", self.undo_drink, primary=False).pack(pady=(8, 0))
 
           row = tk.Frame(self.root, bg=config.BG)
           row.pack(pady=(8, 0))
@@ -311,6 +312,10 @@ class App:
           self.close_popup()
           self.refresh()
 
+
+     def undo_drink(self):
+          self.stats.undo_drink()
+          self.refresh()
 
      def snooze(self):
           self.reminder.snooze()
