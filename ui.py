@@ -4,6 +4,8 @@ from stats import Stats
 
 import config
 
+from reminder import Reminder
+
 FONT = "Segoe UI"
 
 def center(win, w, h):
@@ -60,9 +62,38 @@ class Glass(tk.Canvas):
                                      outline=config.DIM, width=2)
 
 
+class Popup(tk.Toplevel):
+     def __init__(self, app):
+          super().__init__(app.root)
+          self.overrideredirect(True)
+          self.attributes("-topmost", True)
+          self.configure(bg=config.BG, highlightthickness=2,
+                         highlightbackground=config.BUTTON)
+          center(self, 340, 190)
+
+          tk.Label(self, text="Time for WATAAAHHH", font=(FONT, 18, "bold"),
+                   bg=config.BG, fg=config.DIM).pack()
+
+          row = tk.Frame(self, bg=config.BG)
+          row.pack(pady=26)
+          make_buttons(row, "Yeah did bro", app.record_drink).pack(side="left", padx=6)
+          make_buttons(row, "Not yet", app.snooze, primary=False).pack(side="left", padx=6)
+
+
+          self.lift()
+          self.focus_force()
+
+
+
+
+
 class App:
      def __init__(self):
           self.stats = Stats()
+          self.reminder = Reminder(config.DEFAULT_MINUTES * 60,
+                                   config.SNOOZE_MINUTES * 60)
+
+          self.popup = None
 
           self.root = tk.Tk()
           self.root.title("Stoneless")
@@ -92,13 +123,37 @@ class App:
 
      def record_drink(self):
           self.stats.add_drink()
+          self.reminder.reset()
+          self.close_popup()
           self.refresh()
+
+
+     def snooze(self):
+          self.reminder.snooze()
+          self.close_popup()
+
+     def show_popup(self):
+          if self.popup is None:
+               self.close_popup = Popup(self)
+
+     def close_popup(self):
+          if self.popup is not None:
+               self.popup.destroy()
+               self.popup = None
+
     
      def refresh(self):
           n = self.stats.count()
           self.count.config(text=f"{n} / {config.GOAL}")
           self.glass.set_level(n / config.GOAL)
 
+
+     def tick(self):
+          self.next.config(text=f"Next reminder in {fmt(self.reminder.remaining())}")
+          if self.reminder.is_due():
+               self.show_popup()
+          self.root.after(1000, self.tick)
+          
      def run (self):
           self.root.mainloop()
 
