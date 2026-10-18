@@ -6,6 +6,8 @@ import config
 
 from reminder import Reminder
 
+from datetime import date
+
 FONT = "Segoe UI"
 
 def center(win, w, h):
@@ -94,6 +96,7 @@ class App:
                                    config.SNOOZE_MINUTES * 60)
 
           self.popup = None
+          self.day = date.today()
 
           self.root = tk.Tk()
           self.root.title("Stoneless")
@@ -148,12 +151,26 @@ class App:
           self.glass.set_level(n / config.GOAL)
 
 
+     def goal_met(self):
+          return self.stats.count() >= config.GOAL
+
+
      def tick(self):
-          self.next.config(text=f"Next reminder in {fmt(self.reminder.remaining())}")
-          if self.reminder.is_due():
-               self.show_popup()
+          today = date.today()
+          if today != self.day:
+               self.day = today
+               self.reminder.reset()
+               self.close_popup()
+               self.refresh()
+
+          if self.goal_met():
+               self.next.config(text="Goal Reached, Good job")
+          else:
+               self.next.config(text=f"Next reminder in {fmt(self.reminder.remaining())}")
+               if self.reminder.is_due():
+                    self.show_popup()
           self.root.after(1000, self.tick)
-          
+
      def run (self):
           self.root.mainloop()
 
