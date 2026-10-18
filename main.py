@@ -5,7 +5,7 @@ def main():
     enable_dpi_awareness()
 
     from ui import App
-    print("water lock running on",describe())
+    print("stoneless running on",describe())
     warning=compositor_warning()
     if warning:
         print(warning)
