@@ -60,24 +60,58 @@ def make_buttons(parent, text, command, primary=True):
 
 class Glass(tk.Canvas):
 
-     W, H ,PAD = 120, 200, 6
+    W, H, PAD, TAPER = 120, 200, 6, 14
 
-     def __init__(self,parent):
-          super().__init__(parent, width=self.W, height=self.H,
-                        bg=config.BG, highlightthickness=0)
-          self.set_level(0)
+    def __init__(self, parent):
+         super().__init__(parent, width=self.W, height=self.H,
+                          bg=config.BG, highlightthickness=0)
 
-     def set_level(self, fraction):
-          fraction = max(0, min(1, fraction))
-          self.delete("all")
-          p = self.PAD
-          top = self.H - p - (self.H - 2 * p) * fraction
-          if fraction > 0:
-               self.create_rectangle(p, top, self.W - p, self.H - p,
-                                     fill=config.WATER, outline="")
-          self.create_rectangle(p, p, self.W - p, self.H - p,
-                                outline=config.DIM, width=2)
+         self.level = 0.0
+         self.target = 0.0
+         self.job = None
+         self.draw()
 
+    def edges(self, y):
+         p = self.PAD
+         inset = self.TAPER * (y - p) / (self.H - 2 * p)
+         return p + inset, self.W - p -inset
+
+    def draw(self):
+         self.delete("all")
+         p = self.PAD
+         bottom = self.H - p
+         top = bottom - (self.H - 2 * p) * self.level
+
+         if self.level > 0:
+              lx, rx = self.edges(top)
+              blx, brx = self.edges(bottom)
+              self.create_polygon(lx, top, rx, top, brx, bottom, blx, bottom,
+                                  fill=config.WATER, outline="")
+              self.create_line(lx, top, rx, top, fill="#b3e5fc", width=2)
+
+         tl, tr = self.edges(p)
+         bl, br = self.edges(bottom)
+         self.create_polygon(tl, p, tr, p, br, bottom, bl, bottom,
+                             fill="", outline=config.DIM, width=2)
+
+    def set_level(self, fraction):
+         self.target = max(0, min(1, fraction))
+         if self.job is None:
+              self.animate()
+
+    def animate(self):
+         diff = self.target - self.level
+         if abs(diff) < 0.004:
+              self.level = self.target
+              self.draw()
+              self.job = None
+              return
+         self.level += diff* 0.15
+         self.draw()
+         self.job = self.after(16, self.animate)
+
+
+    
 
 class Popup(tk.Toplevel):
      def __init__(self, app):
