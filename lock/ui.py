@@ -1,5 +1,7 @@
 import tkinter as tk
 
+from stats import Stats
+
 import config
 
 FONT = "Segoe UI"
@@ -57,8 +59,10 @@ class Glass(tk.Canvas):
                self.create_rectangle(p, p, self.W - p, self.H - p,
                                        outline=config.DIM, width=2)
 
+
 class App:
      def __init__(self):
+          self.stats = Stats()
 
           self.root = tk.Tk()
           self.root.title("Stoneless")
@@ -66,7 +70,37 @@ class App:
           self.root.geometry("340x520")
           self.root.resizable(False, False)
 
-     def run(self):
-      self.root.mainloop()
 
-      
+          tk.Label(self.root, text="Stoneless", font=(FONT, 20, "bold"),
+                   bg=config.BG, fg=config.DIM).pack(pady=(26, 14))
+
+          self.glass = Glass(self.root)
+          self.glass.pack()
+
+          self.count = tk.Label(self.root, font=(FONT, 40, "bold"),
+                                bg=config.BG, fg=config.TEXT)
+
+          self.count.pack(pady=(14, 0))
+
+          tk.Label(self.root, text="drinks today", font=(FONT, 11),
+                   bg=config.BG, fg=config.DIM).pack()
+
+          make_buttons(self.root, "I Drank", self.record_drink).pack(pady=(24, 0))
+
+          self.refresh()
+
+
+     def record_drink(self):
+          self.stats.add_drink()
+          self.refresh()
+    
+     def refresh(self):
+          n = self.stats.count()
+          self.count.config(text=f"{n} / {config.GOAL}")
+          self.glass.set_level(n / config.GOAL)
+
+     def run (self):
+          self.root.mainloop
+
+
+    
