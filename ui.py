@@ -119,4 +119,4 @@ class App:
         self.root.destroy()
 
     def run(self):
-        self.root.mainloop()
+        self.root.mainloop(
