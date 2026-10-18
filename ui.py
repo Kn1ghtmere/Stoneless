@@ -16,7 +16,7 @@ from tray import Tray
 
 from reminder import Reminder
 
-from datetime import date
+from datetime import date, timedelta
 
 FONT = "Segoe UI"
 
@@ -190,7 +190,42 @@ class InfoWindow(tk.Toplevel):
 
           text.config(state="disabled")
 
+class WeekChart(tk.Canvas):
 
+     W, H = 352, 160
+
+     def __init__(self, parent, history):
+          super().__init__(parent, width=self.W, height=self.H,
+                           bg=config.BG, highlightthickness=0)
+
+          today = date.today()
+          days = [today - timedelta(days=i) for i in range(6, -1, -1)]
+          counts = [history.get(d.isoformat(), 0) for d in days]
+
+          peak = max(config.GOAL, max(counts))
+          base = self.H - 26
+          usable = base - 24
+          slot = self.W / 7
+          half = slot * 0.25
+
+          goal_y = base - usable * config.GOAL / peak
+          self.create_line(0, goal_y, self.W, goal_y,
+                           fill=config.DIM, dash=(4, 4))
+          self.create_text(self.W -2, goal_y - 8, text=f"goal {config.GOAL}",
+                           anchor="e", fill=config.DIM, font=(FONT, 8))
+
+          for i, (d, n) in enumerate(zip(days,counts)):
+               cx = slot * i + slot / 2
+               height = usable * n / peak
+               color = config.TEXT if d == today else config.WATER
+               if n:
+                    self.create_rectangle(cx - half, base - height,
+                                          cx + half, base,
+                                          fill=color, outline="")
+                    self.create_text(cx, base - height - 8, text=str(n),
+                                     fill=config.DIM, font=(FONT, 9))
+               self.create_text(cx, base + 12 , text=d.strftime("%a"),
+                                fill=config.DIM, font=(FONT, 9))
 
 
 
@@ -200,12 +235,14 @@ class HistoryWindow(tk.Toplevel):
           super().__init__(parent)
           self.title("History")
           self.configure(bg=config.BG)
-          self.geometry("400x420")
+          self.geometry("400x540")
           self.minsize(340,240)
 
           tk.Label(self, text="History", font=(FONT, 18, "bold"),
                    bg=config.BG, fg=config.TEXT
                    ).pack(anchor="w", padx=24, pady=(20, 8))
+
+          WeekChart(self, history).pack(anchor="w", padx=24, pady=(0, 8))
 
           frame = tk.Frame(self, bg=config.BG)
           frame.pack(fill="both", expand=True, padx=(24, 12), pady=(0,16))
