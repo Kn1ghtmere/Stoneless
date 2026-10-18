@@ -25,7 +25,7 @@ class Stats:
 
     def _load(self):
         try:
-            days - json.loads(self.path.read_text(encoding="utf-8")) ["days"]
+            days = json.loads(self.path.read_text(encoding="utf-8")) ["days"]
             if not isinstance(days, dict):
                 raise TypeError
             return days 
