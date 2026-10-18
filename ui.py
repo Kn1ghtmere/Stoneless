@@ -36,21 +36,26 @@ def fmt(seconds):
 
 
 def make_buttons(parent, text, command, primary=True):
-     return tk.Button(
+     normal = config.BUTTON if primary else config.BG
+     active = config.BUTTON_ACTIVE if primary else config.SURFACE
+     btn = tk.Button(
           parent,
           text=text,
           command=command,
           font=(FONT, 12, "bold" if primary else "normal"),
-          bg=config.BUTTON if primary else config.BG,
+          bg=normal,
           fg="white" if primary else config.DIM,
-          activebackground=config.BUTTON_ACTIVE,
+          activebackground=active,
           activeforeground="white",
           relief="flat",
           bd=0,
           padx=22,
           pady=9,
-          cursor="hand2",
+          cursor="hand2"
      )
+     btn.bind("<Enter>" , lambda e: btn.config(bg=active))
+     btn.bind("<Leave>", lambda e: btn.config(bg=normal))
+     return btn
 
 
 class Glass(tk.Canvas):
