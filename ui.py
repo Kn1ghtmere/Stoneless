@@ -294,14 +294,17 @@ class App:
                                bg=config.BG, fg=config.DIM)
           self.next.pack(pady=(14, 0))
 
-          make_buttons(self.root, "I Drank", self.record_drink).pack(pady=(24, 0))
-          make_buttons(self.root, "Undo", self.undo_drink, primary=False).pack(pady=(8, 0))
+          make_buttons(self.root, "I Drank", self.record_drink).pack(pady=(22, 0))
 
           row = tk.Frame(self.root, bg=config.BG)
-          row.pack(pady=(8, 0))
-          make_buttons(row, "info", self.show_info, primary=False).pack(side="left")
-          make_buttons(row, "History", self.show_history, primary=False).pack(side="left")
-          make_buttons(self.root, "Settings", self.show_settings, primary=False).pack(pady=(8, 0))
+          row.pack(pady=(14, 0))
+          for text, command in (("Undo", self.undo_drink),
+                                ("History", self.show_history),
+                                ("Info", self.show_info),
+                                ("Settings", self.show_settings)):
+               small = make_buttons(row, text, command, primary=False)
+               small.config(font=(FONT, 10), padx=10, pady=4)
+               small.pack(side="left", padx=2)
 
           
           if autostart.is_supported():
