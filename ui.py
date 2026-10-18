@@ -10,6 +10,10 @@ import info
 
 import settings
 
+import queue
+
+from tray import Tray
+
 from reminder import Reminder
 
 from datetime import date
@@ -253,6 +257,7 @@ class App:
           self.info = None
           self.history_win = None
           self.settings_win = None
+          self.pending = queue.SimpleQueue()
           self.day = date.today()
 
           self.root = tk.Tk()
@@ -260,6 +265,10 @@ class App:
           self.root.configure(bg=config.BG)
           self.root.geometry("340x660")
           self.root.resizable(False, False)
+          self.root.protocol("WM_DELETE_WINDOW", self.hide)
+          self.tray = Tray(lambda: self.pending.put("open"),
+                           lambda: self.pending.put("quit"))
+          self.tray.start()
 
 
           tk.Label(self.root, text="Stoneless", font=(FONT, 20, "bold"),
@@ -300,7 +309,7 @@ class App:
                ).pack(pady=(18,0))
 
           if minimized:
-               self.root.iconify()
+               self.root.withdraw()
 
           self.refresh()
           self.tick()
@@ -374,7 +383,27 @@ class App:
           return self.stats.count() >= config.GOAL
 
 
+     def hide(self):
+          self.root.withdraw()
+
+     def show(self):
+          self.root.deiconify()
+          self.root.lift()
+          self.root.focus_force()
+
+     def quit(self):
+          self.tray.stop()
+          self.root.destroy()
+
      def tick(self):
+          while not self.pending.empty():
+               action = self.pending.get()
+               if action == "open":
+                    self.show()
+               elif action == "quit":
+                    self.quit()
+                    return
+               
           today = date.today()
           if today != self.day:
                self.day = today
