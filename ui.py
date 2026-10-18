@@ -64,8 +64,8 @@ class Glass(tk.Canvas):
           if fraction > 0:
                self.create_rectangle(p, top, self.W - p, self.H - p,
                                      fill=config.WATER, outline="")
-               self.create_rectangle(p, p, self.W - p, self.H - p,
-                                     outline=config.DIM, width=2)
+          self.create_rectangle(p, p, self.W - p, self.H - p,
+                                outline=config.DIM, width=2)
 
 
 class Popup(tk.Toplevel):
@@ -112,7 +112,7 @@ class InfoWindow(tk.Toplevel):
 
           text = tk.Text(frame, wrap="word", bg=config.BG, fg=config.DIM,
                          font=(FONT,10), relief="flat", bd=0,
-                         highlightthickness=0, cursor="arrow", sppyacing2=3,
+                         highlightthickness=0, cursor="arrow", spacing2=3,
                          yscrollcommand=bar.set)
           text.pack(side="left", fill="both", expand=True)
           bar.config(command=text.yview)
@@ -127,6 +127,62 @@ class InfoWindow(tk.Toplevel):
 
           text.config(state="disabled")
 
+
+
+
+
+class HistoryWindow(tk.Toplevel):
+
+     def __init__(self, parent, history):
+          super().__init__(parent)
+          self.title("History")
+          self.configure(bg=config.BG)
+          self.geometry("400x420")
+          self.minsize(340,240)
+
+          tk.Label(self, text="History", font=(FONT, 18, "bold"),
+                   bg=config.BG, fg=config.TEXT
+                   ).pack(anchor="w", padx=24, pady=(20, 8))
+
+          frame = tk.Frame(self, bg=config.BG)
+          frame.pack(fill="both", expand=True, padx=(24, 12), pady=(0,16))
+
+          bar = tk.Scrollbar(frame)
+          bar.pack(side="right", fill="y")
+
+          text = tk.Text(frame, wrap="none", bg=config.BG, fg=config.DIM,
+                         font=("Consolas", 10), relief="flat", bd=0,
+                         highlightthickness=0, cursor="arrow", spacing1=4,
+                         yscrollcommand=bar.set)
+          text.pack(side="left", fill="both" , expand=True)
+          bar.config(command=text.yview)
+
+
+          if not history:
+               text.insert("end", "No drinks logged yet bruh")
+
+          for day, n in reversed(history.items()):
+               label = date.fromisoformat(day).strftime("%a %d %b %Y")
+               bars = "█" * min(n, config.GOAL)
+               mark = "  ✓" if n >= config.GOAL else ""
+               text.insert("end", f"{label} {bars:<{config.GOAL}} {n}/{config.GOAL}{mark}\n")
+
+          text.config(state="disabled")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 class App:
      def __init__(self, minimized=False):
           self.stats = Stats()
@@ -135,6 +191,7 @@ class App:
 
           self.popup = None
           self.info = None
+          self.history_win = None
           self.day = date.today()
 
           self.root = tk.Tk()
@@ -158,10 +215,18 @@ class App:
           tk.Label(self.root, text="drinks today", font=(FONT, 11),
                    bg=config.BG, fg=config.DIM).pack()
 
+          self.next = tk.Label(self.root, font=(FONT, 11),
+                               bg=config.BG, fg=config.DIM)
+          self.next.pack(pady=(14, 0))
+
           make_buttons(self.root, "I Drank", self.record_drink).pack(pady=(24, 0))
 
-          make_buttons(self.root, "info", self.show_info, primary=False).pack(pady=(8, 0))
+          row = tk.Frame(self.root, bg=config.BG)
+          row.pack(pady=(8, 0))
+          make_buttons(row, "info", self.show_info, primary=False).pack(side="left")
+          make_buttons(row, "History", self.show_history, primary=False).pack(side="left")
 
+          
           if autostart.is_supported():
                self.startup = tk.BooleanVar(value=autostart.is_enabled())
                tk.Checkbutton(
@@ -175,6 +240,7 @@ class App:
                self.root.iconify()
 
           self.refresh()
+          self.tick()
 
 
      def record_drink(self):
@@ -210,6 +276,11 @@ class App:
                self.info = InfoWindow(self.root)
           else:
                self.info.lift()
+
+     def show_history(self):
+          if self.history_win is not None and self.history_win.winfo_exists():
+               self.history_win.destroy()
+          self.history_win = HistoryWindow(self.root, self.stats.history())
 
 
      def refresh(self):
