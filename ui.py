@@ -98,18 +98,34 @@ class InfoWindow(tk.Toplevel):
           self.title("important info")
           self.configure(bg=config.BG)
           self.geometry("420x560")
-
+          self.minsize(360, 300)
 
           tk.Label(self, text=info.TITLE, font=(FONT, 18, "bold"),
-                   bg=config.BG, fg=config.TEXT).pack(pady=(20,10))
+                   bg=config.BG, fg=config.TEXT
+                   ).pack(anchor="w", padx=24, pady=(20,8))
+
+          frame = tk.Frame(self, bg=config.BG)
+          frame.pack(fill="both", expand=True, padx=(24, 12), pady=(0,16))
+
+          bar = tk.Scrollbar(frame)
+          bar.pack(side="right", fill="y")
+
+          text = tk.Text(frame, wrap="word", bg=config.BG, fg=config.DIM,
+                         font=(FONT,10), relief="flat", bd=0,
+                         highlightthickness=0, cursor="arrow", sppyacing2=3,
+                         yscrollcommand=bar.set)
+          text.pack(side="left", fill="both", expand=True)
+          bar.config(command=text.yview)
+
+          text.tag_configure("heading", font=(FONT, 12, "bold"),
+                             foreground=config.WATER, spacing1=14, spacing3=4)
+          text.tag_configure("body", spacing3=6)
 
           for heading, body in info.SECTIONS:
-               tk.Label(self, text=heading, font=(FONT, 18, "bold"),
-                        bg=config.BG, fg=config.WATER, anchor="w"
-                        ).pack(fill="x", padx=24, pady=(12,2))
-               tk.Label(self, text=body, font=(FONT,10), bg=config.BG,
-                        fg=config.DIM, justify="left", wraplength=370, anchor="w"
-                        ).pack(fill="x", padx=24)
+               text.insert("end", heading + "\n", "heading")
+               text.insert("end", body + "\n", "body")
+
+          text.config(state="disabled")
 
 class App:
      def __init__(self, minimized=False):
