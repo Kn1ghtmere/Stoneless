@@ -8,6 +8,8 @@ import autostart
 
 import info
 
+import settings
+
 from reminder import Reminder
 
 from datetime import date
@@ -170,7 +172,64 @@ class HistoryWindow(tk.Toplevel):
           text.config(state="disabled")
 
 
+class SettingsWindow(tk.Toplevel):
 
+     FEILDS = (
+          ("Daily goal (drinks)", "GOAL", 1, 30),
+          ("Remind every (minutes)", "DEFAULT_MINUTES", 1, 240),
+          ("Snooze for (minutes)", "SNOOZE_MINUTES", 1, 60),
+     )
+
+
+     def __init__(self, app):
+          super().__init__(app.root)
+          self.app = app
+          self.title("Settings")
+          self.configure(bg=config.BG)
+          self.geometry("360x300")
+          self.resizable(False, False)
+
+
+          tk.Label(self, text ="settings" , font=(FONT, 18, "bold"),
+                   bg=config.BG, fg=config.TEXT
+                   ).pack(anchor="w", padx=24, pady=(20, 10))
+
+          self.spins = {}
+          for label, key, low, high in self.FEILDS:
+               row = tk.Frame(self, bg=config.BG)
+               row.pack(fill="x", padx=24, pady=6)
+               tk.Label(row, text=label, font=(FONT, 11),
+                        bg=config.BG, fg=config.DIM).pack(side="left")
+               spin = tk.Spinbox(row, from_=low, to=high, width=5, font=(FONT, 11),
+                                 bg=config.BUTTON, fg="white",
+                                 buttonbackground=config.BUTTON,
+                                 relief="flat", justify="center")
+
+               spin.delete(0, "end")
+               spin.insert(0, min(max(int(getattr(config, key)), low), high))
+               spin.pack(side="right")
+               self.spins[key] = (label, spin, low, high)
+
+
+          self.note = tk.Label(self, font=(FONT, 10), bg=config.BG, fg=config.TEXT)
+          self.note.pack(pady=(10, 0))
+
+          make_buttons(self, "Save", self.save).pack(pady=(10, 0))
+
+     def save(self):
+          values = {}
+          for key, (label, spin, low, high) in self.spins.items():
+               try:
+                    value = int(spin.get())
+               except ValueError:
+                    value = None
+               if value is None or not low <= value <= high:
+                    self.note.config(text=f"{label}: use {low} to {high}.")
+                    return
+               values[key] = value
+
+          self.app.apply_settings(values)
+          self.destroy()
 
 
 
@@ -185,6 +244,7 @@ class HistoryWindow(tk.Toplevel):
 
 class App:
      def __init__(self, minimized=False):
+          settings.load()
           self.stats = Stats()
           self.reminder = Reminder(config.DEFAULT_MINUTES * 60,
                                    config.SNOOZE_MINUTES * 60)
@@ -192,12 +252,13 @@ class App:
           self.popup = None
           self.info = None
           self.history_win = None
+          self.settings_win = None
           self.day = date.today()
 
           self.root = tk.Tk()
           self.root.title("Stoneless")
           self.root.configure(bg=config.BG)
-          self.root.geometry("340x580")
+          self.root.geometry("340x620")
           self.root.resizable(False, False)
 
 
@@ -225,6 +286,7 @@ class App:
           row.pack(pady=(8, 0))
           make_buttons(row, "info", self.show_info, primary=False).pack(side="left")
           make_buttons(row, "History", self.show_history, primary=False).pack(side="left")
+          make_buttons(self.root, "Settings", self.show_settings, primary=False).pack(pady=(8, 0))
 
           
           if autostart.is_supported():
@@ -256,7 +318,7 @@ class App:
 
      def show_popup(self):
           if self.popup is None:
-               self.close_popup = Popup(self)
+               self.popup = Popup(self)
 
      def close_popup(self):
           if self.popup is not None:
@@ -281,6 +343,20 @@ class App:
           if self.history_win is not None and self.history_win.winfo_exists():
                self.history_win.destroy()
           self.history_win = HistoryWindow(self.root, self.stats.history())
+
+
+     def show_settings(self):
+          if self.settings_win is None or not self.settings_win.winfo_exists():
+               self.settings_win = SettingsWindow(self)
+          else:
+               self.settings_win.lift()
+
+     def apply_settings(self, values):
+          settings.update(values)
+          self.reminder.interval = config.DEFAULT_MINUTES * 60
+          self.reminder.snooze_for = config.SNOOZE_MINUTES * 60
+          self.reminder.reset()
+          self.refresh()
 
 
      def refresh(self):
