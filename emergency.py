@@ -55,3 +55,6 @@ class EmergencyPanel(tk.Frame):
             except Exception:
                 pass
         super().destroy()
+
+
+
