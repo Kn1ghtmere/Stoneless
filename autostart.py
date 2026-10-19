@@ -11,6 +11,8 @@ def is_supported():
 
 
 def _command():
+    if getattr(sys, "frozen",False):
+        return f'"{sys.executable}" --minimized'
     exe = Path(sys.executable)
     windowless = exe.with_name("pythonw.exe")
     if windowless.exists():
