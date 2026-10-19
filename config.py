@@ -20,7 +20,7 @@ BUTTON_ACTIVE="#2a7ab8"
 
 SURFACE="#16385a"
 
-THEME="Deep Sea"
+THEME="Midnight"
 TABS=("Home","History", "Info", "Settings")
 SHINE="#b3e5fc"
 LAST_TAB="Home"

@@ -8,6 +8,8 @@ import autostart
 
 import info
 
+import themes
+
 import settings
 
 import queue
@@ -92,7 +94,7 @@ class Glass(tk.Canvas):
               blx, brx = self.edges(bottom)
               self.create_polygon(lx, top, rx, top, brx, bottom, blx, bottom,
                                   fill=config.WATER, outline="")
-              self.create_line(lx, top, rx, top, fill="#b3e5fc", width=2)
+              self.create_line(lx, top, rx, top, fill=config.SHINE, width=2)
 
          tl, tr = self.edges(p)
          bl, br = self.edges(bottom)
@@ -354,6 +356,7 @@ class SettingsWindow(tk.Toplevel):
 class App:
      def __init__(self, minimized=False):
           settings.load()
+          themes.apply(config.THEME)
           self.stats = Stats()
           self.reminder = Reminder(config.DEFAULT_MINUTES * 60,
                                    config.SNOOZE_MINUTES * 60)
