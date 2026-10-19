@@ -19,3 +19,8 @@ BUTTON="#1e6091"
 BUTTON_ACTIVE="#2a7ab8"
 
 SURFACE="#16385a"
+
+THEME="Deep Sea"
+TABS=("Home","History", "Info", "Settings")
+SHINE="#b3e5fc"
+LAST_TAB="Home"
