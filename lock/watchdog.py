@@ -1,7 +1,6 @@
 import os
 import sys
 import time
-iiiiiiiiiiiiiiiiiiiiii99o
 
 def heartbeat_age(path, now=None):
     now = time.time() if now is None else now
